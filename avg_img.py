@@ -18,8 +18,12 @@ def avg_img(x=400, y=400, directory = 'images', output = 'avg.jpg'):
     # go through all images in a directory
     for filename in listdir(directory):
         count += 1
-        # load each image 
-        img = Image.open(f'{directory}/{filename}').convert("RGB")
+        # load each image
+        try:
+            img = Image.open(f'{directory}/{filename}').convert("RGB")
+        except:
+            print(f"Unable to open {filename}")
+            continue
         # resize image to fit the master_data
         img_resized = img.resize((x,y))
         # turns image to numpy array
@@ -35,4 +39,4 @@ def avg_img(x=400, y=400, directory = 'images', output = 'avg.jpg'):
 
     # saves the image to the directory
     master_image.save(output)
-    print(f"Finished! image saved as '{output}'")
+    print(f"Finished! image saved to '{output}'")

@@ -2,20 +2,24 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import shutil
+import time
 
-def scrape(keyword = 'photography', num_imgs = 100, directory = "images"):
+def scrape(keyword = 'photography', num_imgs = 100, directory = "images", warn = True):
     """searches 'keyword' in google images and downloads
         'num_imgs(int)' images to 'directory'"""
-    user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
+    if warn:
+        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
 if you still wish to proceed, type 'yes'")
-    if user.lower() != 'yes':
-        raise Exception
+        if user.lower() != 'yes':
+            raise Exception
 
     # if the directory exists
     if os.path.isdir(directory):
         # delete all files in the 'directory'
         # by deleting the folder
         shutil.rmtree(directory)
+        # take a quick break to prevent error
+        time.sleep(0.1)
     # adding the folder
     os.mkdir(directory)
     
@@ -23,6 +27,7 @@ if you still wish to proceed, type 'yes'")
     counter = 0
     # link to the google image search
     link = f'https://www.google.com/search?q={keyword}&tbm=isch'
+    print(f"Getting images for {keyword}")
         
     for i in range(num_imgs//20+1):
         # get the page using request
