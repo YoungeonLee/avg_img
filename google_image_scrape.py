@@ -13,21 +13,12 @@ def download(url, save_name):
         with open(f"{save_name}.jpg", 'wb') as f:
             f.write(img.content)
     except:
-        print("Download failed for {save_name}")
+        print(f"Download failed for {save_name}")
         print(f"Failed URL: {url}")
 
-    
-
-
-# chromedriver.exe needs to be in python's 'path'
-
-def scrape(keyword = 'photography', n = 100, wait_time = 1, directory = 'images', warn = True):
-    """scrapes 'n' images by searching 'keyword' on google images
-        saves the images in 'directory'
-        waits for 'wait_time' for images to load
-        if the image does not load, move on to next"""
-    
-    # clean up the directory
+def clean_up_directory(directory, warn = True):
+    """clean up the 'directory'
+        warns users if 'warn' == True"""
     if warn:
         user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
     if you still wish to proceed, type 'yes'")
@@ -42,26 +33,18 @@ def scrape(keyword = 'photography', n = 100, wait_time = 1, directory = 'images'
         # take a quick break to prevent error
         time.sleep(0.1)
     # adding the folder
-    os.mkdir(directory)
+    os.mkdir(directory)  
 
-    # turn on google chrome browser     
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(wait_time)
 
-    # search images
-    driver.get(f"https://www.google.com/search?q={keyword}&tbm=isch")
-
-    # list of images on the page
-
+def download_images(driver, num_images, wait_time, directory):
+    """download the images from the browser"""
     # text that shows the end of the page
     end = driver.find_element_by_class_name('Yu2Dnd')
     # button to load more images
     show_more = driver.find_element_by_class_name('mye4qd')
-
-    print("Hunting for images...")
-
     counter = 0
-    i = 1
+    i = 0
+    # until all images are downloaded
     while True:
         # find all images
         imgs = driver.find_elements_by_class_name('rg_i')
@@ -74,9 +57,24 @@ def scrape(keyword = 'photography', n = 100, wait_time = 1, directory = 'images'
             except IndexError:
                 print("There are not enough images on the search")
                 print(f"Only {counter} images are found")
+                driver.quit()
                 return
             # click the image
-            ActionChains(driver).move_to_element(img).click(img).perform()
+            try:
+                ActionChains(driver).move_to_element(img).click(img).perform()
+            except Exception as e:
+                print(e)
+                time.sleep(1)
+                imgs = driver.find_elements_by_class_name('rg_i')
+                img = imgs[i]
+                try:
+                    ActionChains(driver).move_to_element(img).click(img).perform()
+                except Exception as e:
+                    print(e)
+                    print(f'{img} is not clickable for some reason')
+                    break
+                    
+                
             # timer
             start_time = time.time()
             # loop until image is downloadable or timeout
@@ -84,15 +82,26 @@ def scrape(keyword = 'photography', n = 100, wait_time = 1, directory = 'images'
                 # looks for enlarged image
                 html = driver.find_elements_by_class_name('n3VNCb')
                 # get the link for the image
-                src = html[1].get_attribute('src')
+                try:
+                    if i == 0:
+                        src = html[0].get_attribute('src')
+                    else:
+                        src = html[1].get_attribute('src')
+                except Exception as e:
+                    print(e)
+                    print(html)
+                    print(len(html))
+                    break
+                        
                 # make sure the image is a link
                 if 'http' == src[:4]:
                     #download image
                     download(src, f"{directory}/{counter}")
                     print(f"image saved as {counter}.jpg in {directory}")
                     counter += 1
-                    if counter == n:
+                    if counter == num_images:
                         # end the scrape if enough images are gathered
+                        driver.quit()
                         return
                     break
                 # if it takes longer than the 'wait_time' for the image, move on to next
@@ -110,5 +119,37 @@ def scrape(keyword = 'photography', n = 100, wait_time = 1, directory = 'images'
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 time.sleep(1)
                 break
-                    
-            
+
+
+
+# chromedriver.exe needs to be in python's 'path'
+
+def scrape(keyword = 'photography', num_images = 100, wait_time = 1, directory = 'images', warn = True):
+    """scrapes 'n' images by searching 'keyword' on google images
+        saves the images in 'directory'
+        waits for 'wait_time' for images to load
+        if the image does not load, move on to next"""
+    
+    # clean up the directory
+    if warn:
+        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
+    if you still wish to proceed, type 'yes'")
+        if user.lower() != 'yes':
+            raise Exception
+
+    # if the directory exists
+    clean_up_directory(directory, warn)
+
+    # turn on google chrome browser     
+    driver = webdriver.Chrome()
+    driver.implicitly_wait(wait_time)
+
+    # search images
+    driver.get(f"https://www.google.com/search?q={keyword}&tbm=isch")
+
+    # list of images on the page
+
+    print("Hunting for images...")
+    download_images(driver, num_images, wait_time, directory)
+    
+    

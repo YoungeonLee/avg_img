@@ -4,7 +4,10 @@ import os
 import shutil
 import time
 
-def scrape(keyword = 'photography', num_imgs = 100, directory = "images", warn = True):
+######this method repeats the same images after x amount of images######
+######for more data use the google_img_scrape######
+
+def scrape(keyword = 'photography', num_imgs = 50, directory = "images", warn = True):
     """searches 'keyword' in google images and downloads
         'num_imgs(int)' images to 'directory'"""
     if warn:
@@ -19,7 +22,7 @@ if you still wish to proceed, type 'yes'")
         # by deleting the folder
         shutil.rmtree(directory)
         # take a quick break to prevent error
-        time.sleep(0.1)
+        time.sleep(0.2)
     # adding the folder
     os.mkdir(directory)
     
@@ -52,3 +55,4 @@ if you still wish to proceed, type 'yes'")
         next_link = soup.find_all('a', {'class':'frGj1b'})[0]['href']
         link = f"https://www.google.com{next_link}"
     print("Finished downloading!")
+
