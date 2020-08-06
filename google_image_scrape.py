@@ -16,9 +16,15 @@ def download(url, save_name):
         print(f"Download failed for {save_name}")
         print(f"Failed URL: {url}")
 
-def clean_up_directory():
-    """clean up the 'directory'"""
-    directory = 'avg_img_data'
+def clean_up_directory(directory, warn = True):
+    """clean up the 'directory'
+        warns users if 'warn' == True"""
+    if warn:
+        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
+    if you still wish to proceed, type 'yes'")
+        if user.lower() != 'yes':
+            raise Exception
+
     # if the directory exists
     if os.path.isdir(directory):
         # delete all files in the 'directory'
@@ -27,12 +33,10 @@ def clean_up_directory():
         # take a quick break to prevent error
         time.sleep(0.1)
     # adding the folder
-    os.mkdir(directory)
-    os.mkdir(os.path.join(directory, 'images'))
+    os.mkdir(directory)  
 
 
-def download_images(driver, num_images, wait_time):
-    directory = os.path.join('avg_img_data', 'images')
+def download_images(driver, num_images, wait_time, directory):
     """download the images from the browser"""
     # text that shows the end of the page
     end = driver.find_element_by_class_name('Yu2Dnd')
@@ -120,15 +124,21 @@ def download_images(driver, num_images, wait_time):
 
 # chromedriver.exe needs to be in python's 'path'
 
-def scrape(keyword = 'photography', num_images = 100, wait_time = 1):
+def scrape(keyword = 'photography', num_images = 100, wait_time = 1, directory = 'images', warn = True):
     """scrapes 'n' images by searching 'keyword' on google images
         saves the images in 'directory'
         waits for 'wait_time' for images to load
         if the image does not load, move on to next"""
-
+    
+    # clean up the directory
+    if warn:
+        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
+    if you still wish to proceed, type 'yes'")
+        if user.lower() != 'yes':
+            raise Exception
 
     # if the directory exists
-    clean_up_directory()
+    clean_up_directory(directory, warn)
 
     # turn on google chrome browser     
     driver = webdriver.Chrome()
@@ -140,6 +150,6 @@ def scrape(keyword = 'photography', num_images = 100, wait_time = 1):
     # list of images on the page
 
     print("Hunting for images...")
-    download_images(driver, num_images, wait_time)
+    download_images(driver, num_images, wait_time, directory)
     
     
