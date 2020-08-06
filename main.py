@@ -10,5 +10,5 @@ finally:
 """
 #avg_img(1080,1080, output = "shoesfin")
 
-#scrape('pepper', 100, warn = False)
+scrape('fire', 100, warn = False)
 classify_images(32, 32)
