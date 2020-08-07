@@ -16,14 +16,8 @@ def download(url, save_name):
         print(f"Download failed for {save_name}")
         print(f"Failed URL: {url}")
 
-def clean_up_directory(directory, warn = True):
-    """clean up the 'directory'
-        warns users if 'warn' == True"""
-    if warn:
-        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
-    if you still wish to proceed, type 'yes'")
-        if user.lower() != 'yes':
-            raise Exception
+def clean_up_directory(directory):
+    """clean up the 'directory' """
 
     # if the directory exists
     if os.path.isdir(directory):
@@ -33,11 +27,13 @@ def clean_up_directory(directory, warn = True):
         # take a quick break to prevent error
         time.sleep(0.1)
     # adding the folder
-    os.mkdir(directory)  
+    os.mkdir(directory)
+    os.mkdir(os.path.join(directory, 'images'))
 
 
 def download_images(driver, num_images, wait_time, directory):
     """download the images from the browser"""
+    directory = os.path.join(directory, 'images')
     # text that shows the end of the page
     end = driver.find_element_by_class_name('Yu2Dnd')
     # button to load more images
@@ -124,21 +120,15 @@ def download_images(driver, num_images, wait_time, directory):
 
 # chromedriver.exe needs to be in python's 'path'
 
-def scrape(keyword = 'photography', num_images = 100, wait_time = 1, directory = 'images', warn = True):
+def scrape(keyword = 'photography', num_images = 100, wait_time = 1, directory = 'avg_img_data'):
     """scrapes 'n' images by searching 'keyword' on google images
         saves the images in 'directory'
         waits for 'wait_time' for images to load
         if the image does not load, move on to next"""
     
     # clean up the directory
-    if warn:
-        user = input(f"Warning!!! All files in the directory '{directory}' will be deleted \
-    if you still wish to proceed, type 'yes'")
-        if user.lower() != 'yes':
-            raise Exception
 
-    # if the directory exists
-    clean_up_directory(directory, warn)
+    clean_up_directory(directory)
 
     # turn on google chrome browser     
     driver = webdriver.Chrome()
